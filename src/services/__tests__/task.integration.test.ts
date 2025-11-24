@@ -7,11 +7,9 @@ describe('Task Integration Tests', () => {
     let testUserId: number;
 
     beforeEach(() => {
-        // Clean up database before each test
         db.prepare('DELETE FROM tasks').run();
         db.prepare('DELETE FROM users').run();
 
-        // Create a test user for task operations
         const user = UserService.create({
             name: 'Task User',
             email: 'taskuser@example.com',
@@ -22,14 +20,12 @@ describe('Task Integration Tests', () => {
     });
 
     afterAll(() => {
-        // Clean up database after all tests
         db.prepare('DELETE FROM tasks').run();
         db.prepare('DELETE FROM users').run();
     });
 
     describe('Creating and editing tasks', () => {
         it('should create a task and edit the existing task', () => {
-            // Create task
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Original Task Title',
@@ -45,7 +41,6 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Edit the task
             const updatedTask = TaskService.updateTask(
                 taskId,
                 'Updated Task Title',
@@ -56,26 +51,23 @@ describe('Task Integration Tests', () => {
             expect((updatedTask as any).id).toBe(taskId);
             expect((updatedTask as any).title).toBe('Updated Task Title');
             expect((updatedTask as any).description).toBe('Updated task description');
-            expect((updatedTask as any).status).toBe('todo'); // Status should remain unchanged
+            expect((updatedTask as any).status).toBe('todo');
             expect((updatedTask as any).user_id).toBe(testUserId);
         });
 
         it('should create multiple tasks and edit specific one', () => {
-            // Create first task
             const task1 = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task 1',
                 description: 'Description 1',
             });
 
-            // Create second task
             const task2 = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task 2',
                 description: 'Description 2',
             });
 
-            // Create third task
             const task3 = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task 3',
@@ -84,13 +76,11 @@ describe('Task Integration Tests', () => {
 
             const task2Id = (task2 as any).id;
 
-            // Edit only task 2
             const updatedTask2 = TaskService.updateTask(task2Id, 'Modified Task 2', 'Modified Description 2');
 
             expect((updatedTask2 as any).title).toBe('Modified Task 2');
             expect((updatedTask2 as any).description).toBe('Modified Description 2');
 
-            // Verify other tasks remain unchanged
             const unchangedTask1 = TaskService.getTaskById((task1 as any).id);
             const unchangedTask3 = TaskService.getTaskById((task3 as any).id);
 
@@ -107,7 +97,6 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Update only title
             const updatedTask = TaskService.updateTask(taskId, 'New Title');
 
             expect((updatedTask as any).title).toBe('New Title');
@@ -123,7 +112,6 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Update only description
             const updatedTask = TaskService.updateTask(taskId, undefined, 'New Description');
 
             expect((updatedTask as any).title).toBe('Task Title');
@@ -139,14 +127,11 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Try to update with invalid title (empty)
             try {
                 TaskService.updateTask(taskId, '', 'New Description');
             } catch (error) {
-                // Expected to fail
             }
 
-            // Verify task remains unchanged
             const unchangedTask = TaskService.getTaskById(taskId);
             expect((unchangedTask as any).title).toBe('Task Title');
             expect((unchangedTask as any).description).toBe('Task Description');
@@ -162,13 +147,11 @@ describe('Task Integration Tests', () => {
             const originalUpdatedAt = (task as any).updated_at;
             const taskId = (task as any).id;
 
-            // Wait a tiny bit to ensure timestamp difference
             setTimeout(() => { }, 1);
 
             const updatedTask = TaskService.updateTask(taskId, 'Updated Task');
 
             expect((updatedTask as any).updated_at).toBeDefined();
-            // In a real scenario, updated_at would be different, but in fast tests they might be the same
         });
     });
 
@@ -186,7 +169,6 @@ describe('Task Integration Tests', () => {
         });
 
         it('should throw error when editing deleted task', () => {
-            // Create a task
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task to Delete',
@@ -195,10 +177,8 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Delete the task
             TaskService.deleteTask(taskId);
 
-            // Try to edit deleted task
             expect(() => {
                 TaskService.updateTask(taskId, 'New Title');
             }).toThrow('Tarefa não encontrada');
@@ -210,7 +190,6 @@ describe('Task Integration Tests', () => {
             try {
                 TaskService.updateTask(88888, 'Title', 'Description');
             } catch (error) {
-                // Expected to fail
             }
 
             const tasksAfter = TaskService.listByUser(testUserId);
@@ -220,7 +199,6 @@ describe('Task Integration Tests', () => {
 
     describe('Creating task and moving status', () => {
         it('should create a new task and move it to doing', () => {
-            // Create task (starts as 'todo')
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task to Move',
@@ -230,7 +208,6 @@ describe('Task Integration Tests', () => {
             expect((task as any).status).toBe('todo');
             const taskId = (task as any).id;
 
-            // Move task to 'doing'
             const movedTask = TaskService.moveTask(taskId, 'doing');
 
             expect(movedTask).toBeDefined();
@@ -249,18 +226,14 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Verify initial status
             expect((task as any).status).toBe('todo');
 
-            // Move to doing
             const doingTask = TaskService.moveTask(taskId, 'doing');
             expect((doingTask as any).status).toBe('doing');
 
-            // Move to done
             const doneTask = TaskService.moveTask(taskId, 'done');
             expect((doneTask as any).status).toBe('done');
 
-            // Move back to todo
             const backToTodo = TaskService.moveTask(taskId, 'todo');
             expect((backToTodo as any).status).toBe('todo');
         });
@@ -281,13 +254,10 @@ describe('Task Integration Tests', () => {
             const task1Id = (task1 as any).id;
             const task2Id = (task2 as any).id;
 
-            // Move task1 to doing
             TaskService.moveTask(task1Id, 'doing');
 
-            // Move task2 to done
             TaskService.moveTask(task2Id, 'done');
 
-            // Verify independent statuses
             const updatedTask1 = TaskService.getTaskById(task1Id);
             const updatedTask2 = TaskService.getTaskById(task2Id);
 
@@ -325,7 +295,6 @@ describe('Task Integration Tests', () => {
 
     describe('Moving task to invalid status', () => {
         beforeEach(() => {
-            // Create a task for status tests
             TaskService.createTask({
                 userId: testUserId,
                 title: 'Test Task',
@@ -399,14 +368,11 @@ describe('Task Integration Tests', () => {
             const taskId = (task as any).id;
             const originalStatus = (task as any).status;
 
-            // Try to move to invalid status
             try {
                 TaskService.moveTask(taskId, 'wrong-status' as any);
             } catch (error) {
-                // Expected to fail
             }
 
-            // Verify status remains unchanged
             const unchangedTask = TaskService.getTaskById(taskId);
             expect((unchangedTask as any).status).toBe(originalStatus);
         });
@@ -418,7 +384,6 @@ describe('Task Integration Tests', () => {
         });
 
         it('should validate status before checking task existence', () => {
-            // This should fail on status validation first
             expect(() => {
                 TaskService.moveTask(99999, 'invalid' as any);
             }).toThrow('Tarefa não encontrada');
@@ -427,7 +392,6 @@ describe('Task Integration Tests', () => {
 
     describe('Editing and deleting tasks', () => {
         it('should edit and delete a valid task', () => {
-            // Create task
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task to Edit and Delete',
@@ -436,20 +400,16 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Edit the task
             const editedTask = TaskService.updateTask(taskId, 'Edited Title', 'Edited description');
             expect((editedTask as any).title).toBe('Edited Title');
             expect((editedTask as any).description).toBe('Edited description');
 
-            // Verify task exists before deletion
             const beforeDelete = TaskService.getTaskById(taskId);
             expect(beforeDelete).toBeDefined();
             expect((beforeDelete as any).title).toBe('Edited Title');
 
-            // Delete the task
             TaskService.deleteTask(taskId);
 
-            // Verify task no longer exists
             const afterDelete = TaskService.getTaskById(taskId);
             expect(afterDelete).toBeNull();
         });
@@ -463,25 +423,20 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // First edit
             TaskService.updateTask(taskId, 'Edit 1');
             const afterEdit1 = TaskService.getTaskById(taskId);
             expect((afterEdit1 as any).title).toBe('Edit 1');
 
-            // Second edit
             TaskService.updateTask(taskId, 'Edit 2');
             const afterEdit2 = TaskService.getTaskById(taskId);
             expect((afterEdit2 as any).title).toBe('Edit 2');
 
-            // Third edit
             TaskService.updateTask(taskId, 'Final Edit');
             const afterEdit3 = TaskService.getTaskById(taskId);
             expect((afterEdit3 as any).title).toBe('Final Edit');
 
-            // Delete
             TaskService.deleteTask(taskId);
 
-            // Verify deletion
             expect(TaskService.getTaskById(taskId)).toBeNull();
         });
 
@@ -494,21 +449,17 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Move to doing
             TaskService.moveTask(taskId, 'doing');
 
-            // Edit while in doing status
             const editedTask = TaskService.updateTask(taskId, 'Edited in Doing');
             expect((editedTask as any).status).toBe('doing');
             expect((editedTask as any).title).toBe('Edited in Doing');
 
-            // Delete
             TaskService.deleteTask(taskId);
             expect(TaskService.getTaskById(taskId)).toBeNull();
         });
 
         it('should delete multiple edited tasks', () => {
-            // Create and edit first task
             const task1 = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task 1',
@@ -517,7 +468,6 @@ describe('Task Integration Tests', () => {
             const task1Id = (task1 as any).id;
             TaskService.updateTask(task1Id, 'Edited Task 1');
 
-            // Create and edit second task
             const task2 = TaskService.createTask({
                 userId: testUserId,
                 title: 'Task 2',
@@ -526,11 +476,9 @@ describe('Task Integration Tests', () => {
             const task2Id = (task2 as any).id;
             TaskService.updateTask(task2Id, 'Edited Task 2');
 
-            // Delete both
             TaskService.deleteTask(task1Id);
             TaskService.deleteTask(task2Id);
 
-            // Verify both are deleted
             expect(TaskService.getTaskById(task1Id)).toBeNull();
             expect(TaskService.getTaskById(task2Id)).toBeNull();
         });
@@ -551,13 +499,10 @@ describe('Task Integration Tests', () => {
             const task1Id = (task1 as any).id;
             const task2Id = (task2 as any).id;
 
-            // Edit task 2
             TaskService.updateTask(task2Id, 'Edited Task 2');
 
-            // Delete task 2
             TaskService.deleteTask(task2Id);
 
-            // Verify task 1 still exists
             const remainingTask = TaskService.getTaskById(task1Id);
             expect(remainingTask).toBeDefined();
             expect((remainingTask as any).title).toBe('Task 1');
@@ -580,10 +525,8 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // First delete should succeed
             TaskService.deleteTask(taskId);
 
-            // Second delete should fail
             expect(() => {
                 TaskService.deleteTask(taskId);
             }).toThrow('Tarefa não encontrada');
@@ -617,14 +560,11 @@ describe('Task Integration Tests', () => {
             const tasksBefore = TaskService.listByUser(testUserId);
             const countBefore = tasksBefore.length;
 
-            // Try to delete non-existent task
             try {
                 TaskService.deleteTask(88888);
             } catch (error) {
-                // Expected to fail
             }
 
-            // Verify task count remains the same
             const tasksAfter = TaskService.listByUser(testUserId);
             expect(tasksAfter.length).toBe(countBefore);
         });
@@ -692,7 +632,6 @@ describe('Task Integration Tests', () => {
                     description: 'Description',
                 });
             } catch (error) {
-                // Expected to fail
             }
 
             const tasksAfter = TaskService.listByUser(testUserId);
@@ -700,7 +639,6 @@ describe('Task Integration Tests', () => {
         });
 
         it('should allow creating task with valid title after empty title attempt', () => {
-            // Try to create with empty title
             try {
                 TaskService.createTask({
                     userId: testUserId,
@@ -708,10 +646,8 @@ describe('Task Integration Tests', () => {
                     description: 'Description',
                 });
             } catch (error) {
-                // Expected to fail
             }
 
-            // Create with valid title should succeed
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Valid Title',
@@ -725,14 +661,12 @@ describe('Task Integration Tests', () => {
 
     describe('Login and task creation integration', () => {
         it('should allow logged in user to create task', () => {
-            // Login user
             const loginResult = AuthService.login('taskuser@example.com', 'Password123');
 
             expect(loginResult).toBeDefined();
             expect(loginResult.id).toBe(testUserId);
             expect(loginResult.token).toBeDefined();
 
-            // Create task with logged in user ID
             const task = TaskService.createTask({
                 userId: loginResult.id,
                 title: 'Task by Logged User',
@@ -745,21 +679,18 @@ describe('Task Integration Tests', () => {
         }); it('should create multiple tasks for logged in user', () => {
             const loginResult = AuthService.login('taskuser@example.com', 'Password123');
 
-            // Create first task
             const task1 = TaskService.createTask({
                 userId: loginResult.id,
                 title: 'First Task',
                 description: 'First description',
             });
 
-            // Create second task
             const task2 = TaskService.createTask({
                 userId: loginResult.id,
                 title: 'Second Task',
                 description: 'Second description',
             });
 
-            // Create third task
             const task3 = TaskService.createTask({
                 userId: loginResult.id,
                 title: 'Third Task',
@@ -770,7 +701,6 @@ describe('Task Integration Tests', () => {
             expect((task2 as any).user_id).toBe(loginResult.id);
             expect((task3 as any).user_id).toBe(loginResult.id);
 
-            // Verify all tasks are in the database
             const userTasks = TaskService.listByUser(loginResult.id);
             expect(userTasks.length).toBeGreaterThanOrEqual(3);
         });
@@ -785,12 +715,10 @@ describe('Task Integration Tests', () => {
                 description: 'Description',
             });
 
-            // Verify task is associated with the logged in user
             expect((task as any).user_id).toBe(loggedUserId);
         });
 
         it('should allow different logged in users to create separate tasks', () => {
-            // Create second user
             const user2 = UserService.create({
                 name: 'Second Task User',
                 email: 'taskuser2@example.com',
@@ -798,34 +726,28 @@ describe('Task Integration Tests', () => {
                 confirmPassword: 'Password456',
             });
 
-            // Login first user
             const login1 = AuthService.login('taskuser@example.com', 'Password123');
 
-            // Login second user
             const login2 = AuthService.login('taskuser2@example.com', 'Password456');
 
-            // Create task for first user
             const task1 = TaskService.createTask({
                 userId: login1.id,
                 title: 'User 1 Task',
                 description: 'First user task',
             });
 
-            // Create task for second user
             const task2 = TaskService.createTask({
                 userId: login2.id,
                 title: 'User 2 Task',
                 description: 'Second user task',
             });
 
-            // Verify separate ownership
             expect((task1 as any).user_id).toBe(login1.id);
             expect((task2 as any).user_id).toBe(login2.id);
             expect((task1 as any).user_id).not.toBe((task2 as any).user_id);
         });
 
         it('should fail to create task with non-existent user ID', () => {
-            // Try to create task with invalid user ID (user not logged in / doesn't exist)
             expect(() => {
                 TaskService.createTask({
                     userId: 99999,
@@ -836,7 +758,6 @@ describe('Task Integration Tests', () => {
         });
 
         it('should fail to create task without user ID', () => {
-            // Try to create task without user ID
             expect(() => {
                 TaskService.createTask({
                     userId: null as any,
@@ -847,7 +768,6 @@ describe('Task Integration Tests', () => {
         });
 
         it('should maintain task ownership after logout and login', () => {
-            // Login and create task
             const login1 = AuthService.login('taskuser@example.com', 'Password123');
             const task = TaskService.createTask({
                 userId: login1.id,
@@ -857,19 +777,16 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Simulate logout (in this case, just login again)
             const login2 = AuthService.login('taskuser@example.com', 'Password123');
 
-            // Verify task still belongs to the user
             const persistedTask = TaskService.getTaskById(taskId);
             expect((persistedTask as any).user_id).toBe(login2.id);
-            expect(login1.id).toBe(login2.id); // Same user
+            expect(login1.id).toBe(login2.id);
         });
     });
 
     describe('Complex integration scenarios', () => {
         it('should create, edit, and move task in sequence', () => {
-            // Create task
             const task = TaskService.createTask({
                 userId: testUserId,
                 title: 'Complex Task',
@@ -878,24 +795,20 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Edit task
             const editedTask = TaskService.updateTask(taskId, 'Updated Title', 'Updated description');
             expect((editedTask as any).title).toBe('Updated Title');
             expect((editedTask as any).status).toBe('todo');
 
-            // Move task
             const movedTask = TaskService.moveTask(taskId, 'doing');
             expect((movedTask as any).status).toBe('doing');
             expect((movedTask as any).title).toBe('Updated Title');
 
-            // Edit again
             const finalTask = TaskService.updateTask(taskId, 'Final Title');
             expect((finalTask as any).title).toBe('Final Title');
             expect((finalTask as any).status).toBe('doing');
         });
 
         it('should handle multiple users with separate tasks', () => {
-            // Create second user
             const user2 = UserService.create({
                 name: 'Second User',
                 email: 'user2@example.com',
@@ -903,25 +816,21 @@ describe('Task Integration Tests', () => {
                 confirmPassword: 'Password456',
             });
 
-            // Create task for first user
             const task1 = TaskService.createTask({
                 userId: testUserId,
                 title: 'User 1 Task',
                 description: 'First user task',
             });
 
-            // Create task for second user
             const task2 = TaskService.createTask({
                 userId: user2.id,
                 title: 'User 2 Task',
                 description: 'Second user task',
             });
 
-            // Verify task ownership
             expect((task1 as any).user_id).toBe(testUserId);
             expect((task2 as any).user_id).toBe(user2.id);
 
-            // Move both tasks independently
             TaskService.moveTask((task1 as any).id, 'doing');
             TaskService.moveTask((task2 as any).id, 'done');
 
@@ -933,10 +842,8 @@ describe('Task Integration Tests', () => {
         });
 
         it('should login, create, edit, move, and delete task', () => {
-            // Login
             const loginResult = AuthService.login('taskuser@example.com', 'Password123');
 
-            // Create task
             const task = TaskService.createTask({
                 userId: loginResult.id,
                 title: 'Full Lifecycle Task',
@@ -945,17 +852,14 @@ describe('Task Integration Tests', () => {
 
             const taskId = (task as any).id;
 
-            // Edit task
             TaskService.updateTask(taskId, 'Edited Title');
             const afterEdit = TaskService.getTaskById(taskId);
             expect((afterEdit as any).title).toBe('Edited Title');
 
-            // Move task
             TaskService.moveTask(taskId, 'doing');
             const afterMove = TaskService.getTaskById(taskId);
             expect((afterMove as any).status).toBe('doing');
 
-            // Delete task
             TaskService.deleteTask(taskId);
             const afterDelete = TaskService.getTaskById(taskId);
             expect(afterDelete).toBeNull();

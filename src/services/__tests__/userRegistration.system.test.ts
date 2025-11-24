@@ -9,14 +9,12 @@ describe('User Registration System Tests', () => {
     beforeEach(async () => {
         try {
             const chromeOptions = new Options();
-            // chromeOptions.addArguments('--headless'); // Run in headless mode - DISABLED for visible browser
             chromeOptions.addArguments('--no-sandbox');
             chromeOptions.addArguments('--disable-dev-shm-usage');
             chromeOptions.addArguments('--window-size=1920,1080');
             chromeOptions.addArguments('--start-maximized');
             chromeOptions.addArguments('--disable-blink-features=AutomationControlled');
 
-            // Set up chromedriver service with explicit path
             const chromedriverPath = require('chromedriver').path;
             const service = new ServiceBuilder(chromedriverPath);
 
@@ -31,7 +29,7 @@ describe('User Registration System Tests', () => {
             console.error('Error starting browser:', error);
             throw error;
         }
-    }, 60000); // Increase timeout for browser startup
+    }, 60000);
 
     afterEach(async () => {
         try {
@@ -42,7 +40,7 @@ describe('User Registration System Tests', () => {
         } catch (error) {
             console.error('Error closing browser:', error);
         }
-    }, 60000); // Increase timeout for browser cleanup
+    }, 60000); 
 
     describe('Test 1: Create new user and validate successful registration', () => {
         it('should be able to open browser and access the page', async () => {
@@ -56,68 +54,52 @@ describe('User Registration System Tests', () => {
         });
 
         it('should access the page, fill registration form, submit, and validate user is registered', async () => {
-            // Step 1: Access the page to create a new user
             await driver.get(BASE_URL);
 
-            // Wait for page to load
             await driver.wait(until.elementLocated(By.id('auth-section')), 10000);
 
-            // Step 2: Click on the "Cadastrar" tab to show registration form
             const registerTab = await driver.findElement(By.xpath('//button[contains(text(), "Cadastrar")]'));
             await registerTab.click();
 
-            // Wait for register form to be visible
             await driver.wait(until.elementLocated(By.id('register-form')), 5000);
 
-            // Step 3: Fill name
             const nameInput = await driver.findElement(By.id('register-name'));
             await nameInput.clear();
             await nameInput.sendKeys('Test User Selenium');
 
-            // Step 4: Fill email
             const emailInput = await driver.findElement(By.id('register-email'));
             await emailInput.clear();
             const timestamp = Date.now();
             await emailInput.sendKeys(`selenium.test${timestamp}@example.com`);
 
-            // Step 5: Fill password
             const passwordInput = await driver.findElement(By.id('register-password'));
             await passwordInput.clear();
             await passwordInput.sendKeys('TestPass123');
 
-            // Step 6: Fill password confirmation
             const confirmPasswordInput = await driver.findElement(By.id('register-confirm-password'));
             await confirmPasswordInput.clear();
             await confirmPasswordInput.sendKeys('TestPass123');
 
-            // Step 7: Click on the "Cadastrar" button
             const submitButton = await driver.findElement(By.xpath('//button[@type="submit" and contains(text(), "Cadastrar")]'));
             await submitButton.click();
 
-            // Step 8: Validate if the user is successfully registered
-            // After successful registration, the app should redirect to the main app section
             await driver.wait(until.elementLocated(By.id('app-section')), 10000);
 
-            // Verify that auth section is hidden
             const authSection = await driver.findElement(By.id('auth-section'));
             const authDisplay = await authSection.getCssValue('display');
             expect(authDisplay).toBe('none');
 
-            // Verify that app section is visible
             const appSection = await driver.findElement(By.id('app-section'));
             const appDisplay = await appSection.getCssValue('display');
             expect(appDisplay).not.toBe('none');
 
-            // Verify user name is displayed in the header
             const userNameElement = await driver.findElement(By.id('user-name'));
             const displayedName = await userNameElement.getText();
             expect(displayedName).toBe('Test User Selenium');
 
-            // Verify that the tasks board is visible (user is logged in)
             const tasksBoard = await driver.findElement(By.className('tasks-board'));
             expect(await tasksBoard.isDisplayed()).toBe(true);
 
-            // Verify logout button is visible
             const logoutButton = await driver.findElement(By.xpath('//button[contains(text(), "Sair")]'));
             expect(await logoutButton.isDisplayed()).toBe(true);
         });

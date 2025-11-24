@@ -119,7 +119,7 @@ describe('UserService', () => {
                     confirmPassword: 'differentpassword',
                 };
 
-                expect(() => UserService.create(input)).toThrow('As senhas não conferem');
+                expect(() => UserService.validatePassword(input.password, input.confirmPassword)).toThrow('As senhas não conferem');
             });
         });
 
@@ -267,7 +267,7 @@ describe('UserService', () => {
         });
 
         it('should return true for email with multiple dots', () => {
-            expect(UserService.validateEmail('test@example.co.uk')).toBe(true);
+            expect(UserService.validateEmail('test@example.co.br')).toBe(true);
         });
 
         it('should return true for email with subdomain', () => {

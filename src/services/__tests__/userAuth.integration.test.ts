@@ -4,20 +4,17 @@ import { db } from '../../db';
 
 describe('User and Login Integration Tests', () => {
     beforeEach(() => {
-        // Clean up database before each test
         db.prepare('DELETE FROM tasks').run();
         db.prepare('DELETE FROM users').run();
     });
 
     afterAll(() => {
-        // Clean up database after all tests
         db.prepare('DELETE FROM tasks').run();
         db.prepare('DELETE FROM users').run();
     });
 
     describe('Creating user and logging in', () => {
         it('should create a user and login successfully', () => {
-            // Create user
             const user = UserService.create({
                 name: 'John Doe',
                 email: 'john@example.com',
@@ -30,7 +27,6 @@ describe('User and Login Integration Tests', () => {
             expect(user.email).toBe('john@example.com');
             expect(user.name).toBe('John Doe');
 
-            // Login with created user
             const loginResult = AuthService.login('john@example.com', 'SecurePass123');
 
             expect(loginResult).toBeDefined();
@@ -40,7 +36,6 @@ describe('User and Login Integration Tests', () => {
         });
 
         it('should create multiple users and login with each one', () => {
-            // Create first user
             const user1 = UserService.create({
                 name: 'User One',
                 email: 'user1@example.com',
@@ -48,7 +43,6 @@ describe('User and Login Integration Tests', () => {
                 confirmPassword: 'Password123',
             });
 
-            // Create second user
             const user2 = UserService.create({
                 name: 'User Two',
                 email: 'user2@example.com',
@@ -60,24 +54,20 @@ describe('User and Login Integration Tests', () => {
             expect(user2.id).toBeDefined();
             expect(user1.id).not.toBe(user2.id);
 
-            // Login with first user
             const login1 = AuthService.login('user1@example.com', 'Password123');
 
             expect(login1.email).toBe('user1@example.com');
             expect(login1.id).toBe(user1.id);
 
-            // Login with second user
             const login2 = AuthService.login('user2@example.com', 'AnotherPass456');
 
             expect(login2.email).toBe('user2@example.com');
             expect(login2.id).toBe(user2.id);
 
-            // Tokens should be different
             expect(login1.token).not.toBe(login2.token);
         });
 
         it('should persist user data across operations', () => {
-            // Create user
             UserService.create({
                 name: 'Persist User',
                 email: 'persist@example.com',
@@ -85,7 +75,6 @@ describe('User and Login Integration Tests', () => {
                 confirmPassword: 'MyPassword789',
             });
 
-            // Login multiple times with same user
             const login1 = AuthService.login('persist@example.com', 'MyPassword789');
             const login2 = AuthService.login('persist@example.com', 'MyPassword789');
 
@@ -95,7 +84,6 @@ describe('User and Login Integration Tests', () => {
         });
 
         it('should require exact email match during login', () => {
-            // Create user with lowercase email
             const user = UserService.create({
                 name: 'Case Test',
                 email: 'casetest@example.com',
@@ -103,13 +91,11 @@ describe('User and Login Integration Tests', () => {
                 confirmPassword: 'TestPass123',
             });
 
-            // Login with exact email should work
             const loginResult = AuthService.login('casetest@example.com', 'TestPass123');
 
             expect(loginResult.id).toBe(user.id);
             expect(loginResult.email).toBe('casetest@example.com');
 
-            // Login with different case should fail (case-sensitive)
             expect(() => {
                 AuthService.login('CASETEST@EXAMPLE.COM', 'TestPass123');
             }).toThrow('Usuário ou senha inválidos');
@@ -118,7 +104,6 @@ describe('User and Login Integration Tests', () => {
 
     describe('Logging in with incorrect password', () => {
         beforeEach(() => {
-            // Create a user for login tests
             UserService.create({
                 name: 'Test User',
                 email: 'testuser@example.com',
@@ -153,13 +138,13 @@ describe('User and Login Integration Tests', () => {
 
         it('should throw error when password is almost correct', () => {
             expect(() => {
-                AuthService.login('testuser@example.com', 'CorrectPassword12'); // Missing last character
+                AuthService.login('testuser@example.com', 'CorrectPassword12');
             }).toThrow('Senha incorreta');
         });
 
         it('should throw error with correct password but wrong case', () => {
             expect(() => {
-                AuthService.login('testuser@example.com', 'correctpassword123'); // Different case
+                AuthService.login('testuser@example.com', 'correctpassword123');
             }).toThrow('Senha incorreta');
         });
 
@@ -170,14 +155,11 @@ describe('User and Login Integration Tests', () => {
         });
 
         it('should maintain correct user data after failed login attempt', () => {
-            // Try to login with wrong password
             try {
                 AuthService.login('testuser@example.com', 'WrongPassword');
             } catch (error) {
-                // Expected to fail
             }
 
-            // Login with correct password should still work
             const loginResult = AuthService.login('testuser@example.com', 'CorrectPassword123');
 
             expect(loginResult.email).toBe('testuser@example.com');
