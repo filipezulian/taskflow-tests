@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Gerenciador de Tarefas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login/Register Section -->
+        <div id="auth-section" class="auth-section">
+            <div class="auth-card">
+                <h1>TaskFlow</h1>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showTab('login')">Login</button>
+                    <button class="tab-btn" onclick="showTab('register')">Cadastrar</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <h2>Entrar</h2>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Entrar</button>
+                    <div id="login-error" class="error-message"></div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form" style="display: none;">
+                    <h2>Criar Conta</h2>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="register-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Senha</label>
+                        <input type="password" id="register-confirm-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                    <div id="register-error" class="error-message"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="app-section" class="app-section" style="display: none;">
+            <header class="app-header">
+                <h1>TaskFlow</h1>
+                <div class="user-info">
+                    <span id="user-name"></span>
+                    <button onclick="logout()" class="btn btn-logout">Sair</button>
+                </div>
+            </header>
+
+            <div class="app-content">
+                <!-- Create Task Form -->
+                <div class="create-task-section">
+                    <h2>Nova Tarefa</h2>
+                    <form id="create-task-form">
+                        <div class="form-group">
+                            <input type="text" id="task-title" placeholder="Título da tarefa" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="task-description" placeholder="Descrição (opcional)" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+                    </form>
+                    <div id="create-task-error" class="error-message"></div>
+                </div>
+
+                <!-- Tasks Board -->
+                <div class="tasks-board">
+                    <div class="task-column">
+                        <h3 class="column-header todo-header">
+                            <span>📋 A Fazer</span>
+                            <span class="task-count" id="todo-count">0</span>
+                        </h3>
+                        <div id="todo-tasks" class="task-list"></div>
+                    </div>
+
+                    <div class="task-column">
+                        <h3 class="column-header doing-header">
+                            <span>⚡ Em Progresso</span>
+                            <span class="task-count" id="doing-count">0</span>
+                        </h3>
+                        <div id="doing-tasks" class="task-list"></div>
+                    </div>
+
+                    <div class="task-column">
+                        <h3 class="column-header done-header">
+                            <span>✅ Concluído</span>
+                            <span class="task-count" id="done-count">0</span>
+                        </h3>
+                        <div id="done-tasks" class="task-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2>Editar Tarefa</h2>
+            <form id="edit-task-form">
+                <input type="hidden" id="edit-task-id">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="edit-task-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="edit-task-description" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+            <div id="edit-task-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
